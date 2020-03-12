@@ -10,27 +10,70 @@ namespace AliasMethod
         readonly List<double> Probability = new List<double>();
         readonly List<T> Values = new List<T>();
 
-        public AliasWeightTable(ICollection<Tuple<T, int>> ValueWeightPairs) : base(ValueWeightPairs)
+        public AliasWeightTable(ICollection<Tuple<T, int>> valueWeightPairs) : base(valueWeightPairs)
         {
-            double average = 1.0 / ValueWeightPairs.Count;
+            SetTables(valueWeightPairs);
+        }
 
-            var Probabilities = new List<double>();
+        protected override int GetIndex(Random random)
+        {
+            throw new NotImplementedException();
+        }
 
-            double TotalWeight = ValueWeightPairs.Aggregate(0, (a, b) => a + b.Item2);
-            foreach (var kvp in ValueWeightPairs)
+        public override void Reset()
+        {
+            base.Reset();
+            SetTables(MasterTable);
+        }
+
+        public override T Sample(Random random)
+        {
+            int column = random.Next(Probability.Count);
+
+            bool coinToss = random.NextDouble() < Probability[column];
+
+            return coinToss ? Values[column] : Values[Alias[column]];
+        }
+
+        public override T SampleWithoutReplacement(Random random)
+        {
+            int column = random.Next(Probability.Count);
+
+            bool coinToss = random.NextDouble() < Probability[column];
+
+            int index = coinToss ? column : Alias[column];
+            T Value = Values[index];
+            Table.RemoveAt(index);
+            SetTables(Table);
+
+            return Value;
+        }
+
+        private void SetTables(ICollection<Tuple<T, int>> valueWeightPairs)
+        {
+            Alias.Clear();
+            Probability.Clear();
+            Values.Clear();
+
+            double average = 1d / valueWeightPairs.Count;
+
+            var probabilities = new List<double>();
+
+            double totalWeight = valueWeightPairs.Aggregate(0, (a, b) => a + b.Item2);
+            foreach (var vwp in valueWeightPairs)
             {
-                Probabilities.Add(kvp.Item2 / TotalWeight);
-                Probability.Add(kvp.Item2 / TotalWeight);
+                probabilities.Add(vwp.Item2 / totalWeight);
+                Probability.Add(vwp.Item2 / totalWeight);
                 Alias.Add(0);
-                Values.Add(kvp.Item1);
+                Values.Add(vwp.Item1);
             }
 
             var small = new Stack<int>();
             var large = new Stack<int>();
 
-            for (int i = 0; i < Probabilities.Count; ++i)
+            for (int i = 0; i < probabilities.Count; ++i)
             {
-                if (Probabilities[i] >= average)
+                if (probabilities[i] >= average)
                 {
                     large.Push(i);
                 }
@@ -45,12 +88,12 @@ namespace AliasMethod
                 int less = small.Pop();
                 int more = large.Pop();
 
-                Probability[less] = Probabilities[less] * Probabilities.Count;
+                Probability[less] = probabilities[less] * probabilities.Count;
                 Alias[less] = more;
 
-                Probabilities[more] = Probabilities[more] + Probabilities[less] - average;
+                probabilities[more] = probabilities[more] + probabilities[less] - average;
 
-                if (Probabilities[more] >= 1.0 / Probabilities.Count)
+                if (probabilities[more] >= 1d / probabilities.Count)
                 {
                     large.Push(more);
                 }
@@ -68,25 +111,6 @@ namespace AliasMethod
             {
                 Probability[large.Pop()] = 1;
             }
-        }
-
-        public override void Reset()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override T Sample(Random random)
-        {
-            int column = random.Next(Probability.Count);
-
-            bool coinToss = random.NextDouble() < Probability[column];
-
-            return coinToss ? Values[column] : Values[Alias[column]];
-        }
-
-        public override T SampleWithoutReplacement(Random random)
-        {
-            throw new NotImplementedException();
         }
     }
 }

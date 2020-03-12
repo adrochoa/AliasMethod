@@ -6,28 +6,12 @@ namespace AliasMethod
 {
     sealed class BasicWeightTable<T> : WeightTable<T> where T : struct
     {
-        readonly List<Tuple<T, int>> Table = new List<Tuple<T, int>>();
-        int TotalWeight = 0;
-
         public BasicWeightTable() : base() { }
-        public BasicWeightTable(ICollection<Tuple<T, int>> ValueWeightPair) : base(ValueWeightPair)
-        {
-            foreach (var kvp in ValueWeightPair)
-            {
-                Table.Add(new Tuple<T, int>(kvp.Item1, kvp.Item2));
-            }
-            TotalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
-        }
+        public BasicWeightTable(ICollection<Tuple<T, int>> valueWeightPairs) : base(valueWeightPairs) { }
 
-        public override void Reset()
+        protected override int GetIndex(Random random)
         {
-            Table.Clear();
-            foreach (var vwp in MasterTable)
-            {
-                Table.Add(new Tuple<T, int>(vwp.Item1, vwp.Item2));
-            }
-
-            TotalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
+            throw new NotImplementedException();
         }
 
         public override T Sample(Random random)
