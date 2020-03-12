@@ -20,6 +20,8 @@ namespace AliasMethod
             foreach (var kvp in ValueWeightPairs)
             {
                 Probabilities.Add(kvp.Item2 / TotalWeight);
+                Probability.Add(kvp.Item2 / TotalWeight);
+                Alias.Add(0);
                 Values.Add(kvp.Item1);
             }
 
@@ -38,7 +40,7 @@ namespace AliasMethod
                 }
             }
 
-            while (!(small.Count > 0) && !(large.Count > 0))
+            while (small.Count > 0 && large.Count > 0)
             {
                 int less = small.Pop();
                 int more = large.Pop();
@@ -58,11 +60,11 @@ namespace AliasMethod
                 }
             }
 
-            while (!(small.Count > 0))
+            while (small.Count > 0)
             {
                 Probability[small.Pop()] = 1;
             }
-            while (!(large.Count > 0))
+            while (large.Count > 0)
             {
                 Probability[large.Pop()] = 1;
             }

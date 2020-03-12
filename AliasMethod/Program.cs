@@ -14,24 +14,27 @@ namespace AliasMethod
                 testTable.Add(new Tuple<int, int>(i, i));
             }
 
-            //var aliasTable = new AliasWeightTable<int>(testTable);
+            var aliasTable = new AliasWeightTable<int>(testTable);
             var basicTable = new BasicWeightTable<int>(testTable);
 
-            //double aliasAverage = 0;
+            double aliasAverage = 0;
             double basicAverage = 0;
 
-            for (int i = 0; i < 1000000; i++)
+            for (int i = 0; i < 10000000; i++)
             {
-                //int aliasSample = aliasTable.Sample(random);
+                int aliasSample = aliasTable.Sample(random);
                 int basicSample = basicTable.Sample(random);
-                //aliasAverage = (aliasAverage * i + aliasSample) / (i + 1);
+                aliasAverage = (aliasAverage * i + aliasSample) / (i + 1);
                 basicAverage = (basicAverage * i + basicSample) / (i + 1);
             }
 
             Console.WriteLine($"basicAvergage = {basicAverage}");
+            Console.WriteLine($"aliasAvergage = {aliasAverage}");
+
             double theo = 14d / 6;
             Console.WriteLine($"theoAverage = {theo}");
-            Console.WriteLine($"diff = {theo - basicAverage}");
+            Console.WriteLine($"basicDiff = {theo - basicAverage}");
+            Console.WriteLine($"aliasDiff = {theo - aliasAverage}");
             Console.ReadKey();
         }
     }
