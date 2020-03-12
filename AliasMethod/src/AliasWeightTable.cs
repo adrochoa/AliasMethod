@@ -17,7 +17,9 @@ namespace AliasMethod
 
         protected override int GetIndex(Random random)
         {
-            throw new NotImplementedException();
+            int column = random.Next(Probability.Count);
+            bool coinToss = random.NextDouble() < Probability[column];
+            return coinToss ? column : Alias[column];
         }
 
         public override void Reset()
@@ -28,24 +30,15 @@ namespace AliasMethod
 
         public override T Sample(Random random)
         {
-            int column = random.Next(Probability.Count);
-
-            bool coinToss = random.NextDouble() < Probability[column];
-
-            return coinToss ? Values[column] : Values[Alias[column]];
+            return Values[GetIndex(random)];
         }
 
         public override T SampleWithoutReplacement(Random random)
         {
-            int column = random.Next(Probability.Count);
-
-            bool coinToss = random.NextDouble() < Probability[column];
-
-            int index = coinToss ? column : Alias[column];
+            int index = GetIndex(random);
             T Value = Values[index];
             Table.RemoveAt(index);
             SetTables(Table);
-
             return Value;
         }
 
@@ -59,11 +52,11 @@ namespace AliasMethod
 
             var probabilities = new List<double>();
 
-            double totalWeight = valueWeightPairs.Aggregate(0, (a, b) => a + b.Item2);
+            TotalWeight = valueWeightPairs.Aggregate(0, (a, b) => a + b.Item2);
             foreach (var vwp in valueWeightPairs)
             {
-                probabilities.Add(vwp.Item2 / totalWeight);
-                Probability.Add(vwp.Item2 / totalWeight);
+                probabilities.Add(vwp.Item2 / TotalWeight);
+                Probability.Add(vwp.Item2 / TotalWeight);
                 Alias.Add(0);
                 Values.Add(vwp.Item1);
             }

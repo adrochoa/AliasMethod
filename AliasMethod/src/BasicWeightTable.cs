@@ -11,42 +11,32 @@ namespace AliasMethod
 
         protected override int GetIndex(Random random)
         {
-            throw new NotImplementedException();
-        }
-
-        public override T Sample(Random random)
-        {
             double x = random.Next(TotalWeight);
             double cumulativeSum = 0;
-            foreach (var vwp in Table)
+            for (int i = 0; i < Table.Count; i++)
             {
-                cumulativeSum += vwp.Item2;
+                cumulativeSum += Table[i].Item2;
                 if (x < cumulativeSum)
                 {
-                    return vwp.Item1;
+                    return i;
                 }
             }
 
             throw new IndexOutOfRangeException();
         }
 
+        public override T Sample(Random random)
+        {
+            int index = GetIndex(random);
+            return Table[index].Item1;
+        }
+
         public override T SampleWithoutReplacement(Random random)
         {
-            double x = random.Next(TotalWeight);
-            double cumulativeSum = 0;
-
-            T Value = default;
-            for (int i = 0; i < Table.Count; i++)
-            {
-                cumulativeSum += Table[i].Item2;
-                if (x < cumulativeSum)
-                {
-                    Value = Table[i].Item1;
-                    TotalWeight -= Table[i].Item2;
-                    Table.RemoveAt(i);
-                }
-            }
-
+            int index = GetIndex(random);
+            T Value = Table[index].Item1;
+            TotalWeight -= Table[index].Item2;
+            Table.RemoveAt(index);
             return Value;
         }
     }
