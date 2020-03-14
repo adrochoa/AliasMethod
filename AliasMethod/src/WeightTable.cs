@@ -27,35 +27,6 @@ namespace AliasMethod
             Subtract = subtract;
         }
 
-        double Average
-        {
-            get
-            {
-                double average = 0;
-                double totalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
-                foreach (var vwp in MasterTable)
-                {
-                    average += Multiply(vwp.Item1, vwp.Item2) / totalWeight;
-                }
-
-                return average;
-            }
-        }
-
-        double StandardDeviation
-        {
-            get
-            {
-                double standardDeviation = 0;
-                double totalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
-                foreach (var vwp in MasterTable)
-                {
-                    standardDeviation += Multiply(vwp.Item1, vwp.Item2) / totalWeight;
-                }
-                return 0;
-            }
-        }
-
         protected abstract int GetIndex(Random random);
         public virtual void Reset()
         {
@@ -85,7 +56,7 @@ namespace AliasMethod
             }
         }
 
-        public (double Mean, double StandardDeviation) SummaryStats
+        double Average
         {
             get
             {
@@ -96,13 +67,30 @@ namespace AliasMethod
                     average += Multiply(vwp.Item1, vwp.Item2) / totalWeight;
                 }
 
-                double variance = 0;
-                foreach (var vwp in MasterTable)
-                {
-                    variance += vwp.Item2 * Math.Pow(Subtract(vwp.Item1, average), 2) / totalWeight;
-                }
+                return average;
+            }
+        }
 
-                return (Mean: average, StandardDeviation: Math.Sqrt(variance));
+        double StandardDeviation(double average)
+        {
+            double variance = 0;
+            double totalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
+            foreach (var vwp in MasterTable)
+            {
+                variance += vwp.Item2 * Math.Pow(Subtract(vwp.Item1, average), 2) / totalWeight;
+            }
+
+            return Math.Sqrt(variance);
+        }
+
+        public (double Mean, double StandardDeviation) SummaryStats
+        {
+            get
+            {
+                var average = Average;
+                var standardDeviation = StandardDeviation(average);
+
+                return (Mean: average, StandardDeviation: standardDeviation);
             }
         }
 
