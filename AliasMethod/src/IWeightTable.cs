@@ -8,7 +8,6 @@ namespace AliasMethod
         void Reset();
         T Sample(Random random);
         T SampleWithoutReplacement(Random random);
-
-        object SummaryStats { get; }
+        (double Mean, double StandardDeviation) SummaryStats { get; }
     }
 }

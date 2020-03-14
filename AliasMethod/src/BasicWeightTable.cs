@@ -7,7 +7,7 @@ namespace AliasMethod
     sealed class BasicWeightTable<T> : WeightTable<T> where T : struct
     {
         public BasicWeightTable() : base() { }
-        public BasicWeightTable(ICollection<Tuple<T, int>> valueWeightPairs) : base(valueWeightPairs) { }
+        public BasicWeightTable(ICollection<Tuple<T, int>> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract) : base(valueWeightPairs, multiply, subtract) { }
 
         protected override int GetIndex(Random random)
         {

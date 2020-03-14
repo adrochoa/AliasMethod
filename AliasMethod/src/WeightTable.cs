@@ -10,9 +10,11 @@ namespace AliasMethod
         protected readonly List<Tuple<T, int>> MasterTable = new List<Tuple<T, int>>();
         protected readonly List<Tuple<T, int>> Table = new List<Tuple<T, int>>();
         protected int TotalWeight = 0;
+        readonly Func<T, int, double> Multiply;
+        readonly Func<T, double, double> Subtract;
 
         public WeightTable() { }
-        public WeightTable(ICollection<Tuple<T, int>> valueWeightPairs)
+        public WeightTable(ICollection<Tuple<T, int>> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract)
         {
             foreach (var vwp in valueWeightPairs)
             {
@@ -21,37 +23,38 @@ namespace AliasMethod
             }
 
             TotalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
+            Multiply = multiply;
+            Subtract = subtract;
         }
 
-        //public double Average
-        //{
-        //    get
-        //    {
-        //        double average = 0;
-        //        double totalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
-        //        foreach (var vwp in MasterTable)
-        //        {
-        //            average += Multiply(vwp.Item1, vwp.Item2) / totalWeight;
-        //        }
+        double Average
+        {
+            get
+            {
+                double average = 0;
+                double totalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
+                foreach (var vwp in MasterTable)
+                {
+                    average += Multiply(vwp.Item1, vwp.Item2) / totalWeight;
+                }
 
-        //        return average;
-        //    }
-        //}
+                return average;
+            }
+        }
 
-        //public double StandardDeviation
-        //{
-        //    get
-        //    {
-        //        double standardDeviation = 0;
-        //        double totalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
-        //        foreach (var vwp in MasterTable)
-        //        {
-        //            standardDeviation += Multiply(vwp.Item1, vwp.Item2) / totalWeight;
-        //        }
-
-        //        return 0;
-        //    }
-        //}
+        double StandardDeviation
+        {
+            get
+            {
+                double standardDeviation = 0;
+                double totalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
+                foreach (var vwp in MasterTable)
+                {
+                    standardDeviation += Multiply(vwp.Item1, vwp.Item2) / totalWeight;
+                }
+                return 0;
+            }
+        }
 
         protected abstract int GetIndex(Random random);
         public virtual void Reset()
@@ -68,14 +71,6 @@ namespace AliasMethod
         public abstract T Sample(Random random);
         public abstract T SampleWithoutReplacement(Random random);
 
-        public object SummaryStats
-        {
-            get
-            {
-                return new { Mean = 0 };
-            }
-        }
-
         IEnumerable<T> Enumerate
         {
             get
@@ -87,6 +82,27 @@ namespace AliasMethod
                         yield return vwp.Item1;
                     }
                 }
+            }
+        }
+
+        public (double Mean, double StandardDeviation) SummaryStats
+        {
+            get
+            {
+                double average = 0;
+                double totalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
+                foreach (var vwp in MasterTable)
+                {
+                    average += Multiply(vwp.Item1, vwp.Item2) / totalWeight;
+                }
+
+                double variance = 0;
+                foreach (var vwp in MasterTable)
+                {
+                    variance += vwp.Item2 * Math.Pow(Subtract(vwp.Item1, average), 2) / totalWeight;
+                }
+
+                return (Mean: average, StandardDeviation: Math.Sqrt(variance));
             }
         }
 

@@ -10,7 +10,7 @@ namespace AliasMethod
         readonly List<double> Probability = new List<double>();
         readonly List<T> Values = new List<T>();
 
-        public AliasWeightTable(ICollection<Tuple<T, int>> valueWeightPairs) : base(valueWeightPairs)
+        public AliasWeightTable(ICollection<Tuple<T, int>> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract) : base(valueWeightPairs, multiply, subtract)
         {
             SetTables(valueWeightPairs);
         }
