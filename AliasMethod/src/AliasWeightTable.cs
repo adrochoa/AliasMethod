@@ -55,8 +55,8 @@ namespace AliasMethod
             TotalWeight = valueWeightPairs.Aggregate(0, (a, b) => a + b.Item2);
             foreach (var vwp in valueWeightPairs)
             {
-                probabilities.Add(vwp.Item2 / TotalWeight);
-                Probability.Add(vwp.Item2 / TotalWeight);
+                probabilities.Add((double)vwp.Item2 / TotalWeight);
+                Probability.Add((double)vwp.Item2 / TotalWeight);
                 Alias.Add(0);
                 Values.Add(vwp.Item1);
             }

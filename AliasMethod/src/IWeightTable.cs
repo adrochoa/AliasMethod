@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace AliasMethod
 {
-    interface IWeightTable<T> where T : struct
+    interface IWeightTable<T> : IEnumerable<T> where T : struct
     {
         void Reset();
         T Sample(Random random);
         T SampleWithoutReplacement(Random random);
+
+        object SummaryStats { get; }
     }
 }
