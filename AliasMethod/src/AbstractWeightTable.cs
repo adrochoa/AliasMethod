@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace AliasMethod
 {
-    abstract class WeightTable<T> : IWeightTable<T> where T : struct
+    abstract class AbstractWeightTable<T> : IWeightTable<T> where T : struct
     {
         protected readonly List<Tuple<T, int>> MasterTable = new List<Tuple<T, int>>();
         protected readonly List<Tuple<T, int>> Table = new List<Tuple<T, int>>();
@@ -13,8 +13,7 @@ namespace AliasMethod
         readonly Func<T, int, double> Multiply;
         readonly Func<T, double, double> Subtract;
 
-        public WeightTable() { }
-        public WeightTable(ICollection<Tuple<T, int>> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract)
+        public AbstractWeightTable(ICollection<Tuple<T, int>> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract)
         {
             foreach (var vwp in valueWeightPairs)
             {
@@ -27,7 +26,7 @@ namespace AliasMethod
             Subtract = subtract;
         }
 
-        protected abstract int GetIndex(Random random);
+        protected abstract int Index { get; }
         public virtual void Reset()
         {
             Table.Clear();
@@ -39,8 +38,8 @@ namespace AliasMethod
             TotalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
         }
 
-        public abstract T Sample(Random random);
-        public abstract T SampleWithoutReplacement(Random random);
+        public abstract T Sample { get; }
+        public abstract T SampleWithoutReplacement { get; }
 
         IEnumerable<T> Enumerate
         {

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace AliasMethod
 {
-    sealed class AliasWeightTable<T> : WeightTable<T> where T : struct
+    sealed class AliasWeightTable<T> : AbstractWeightTable<T> where T : struct
     {
         readonly List<int> Alias = new List<int>();
         readonly List<double> Probability = new List<double>();
@@ -15,11 +15,14 @@ namespace AliasMethod
             SetTables(valueWeightPairs);
         }
 
-        protected override int GetIndex(Random random)
+        protected override int Index
         {
-            int column = random.Next(Probability.Count);
-            bool coinToss = random.NextDouble() < Probability[column];
-            return coinToss ? column : Alias[column];
+            get
+            {
+                int column = StaticRandom.Next(Probability.Count);
+                bool coinToss = StaticRandom.NextDouble() < Probability[column];
+                return coinToss ? column : Alias[column];
+            }
         }
 
         public override void Reset()
@@ -28,18 +31,24 @@ namespace AliasMethod
             SetTables(MasterTable);
         }
 
-        public override T Sample(Random random)
+        public override T Sample
         {
-            return Values[GetIndex(random)];
+            get
+            {
+                return Values[Index];
+            }
         }
 
-        public override T SampleWithoutReplacement(Random random)
+        public override T SampleWithoutReplacement
         {
-            int index = GetIndex(random);
-            T Value = Values[index];
-            Table.RemoveAt(index);
-            SetTables(Table);
-            return Value;
+            get
+            {
+                int index = Index;
+                T value = Values[index];
+                Table.RemoveAt(index);
+                SetTables(Table);
+                return value;
+            }
         }
 
         private void SetTables(ICollection<Tuple<T, int>> valueWeightPairs)
