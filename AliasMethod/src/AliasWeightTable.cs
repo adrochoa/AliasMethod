@@ -10,7 +10,7 @@ namespace AliasMethod
         readonly List<double> Probability = new List<double>();
         readonly List<T> Values = new List<T>();
 
-        public AliasWeightTable(ICollection<Tuple<T, int>> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract) : base(valueWeightPairs, multiply, subtract)
+        public AliasWeightTable(ICollection<(T Value, int Weight)> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract) : base(valueWeightPairs, multiply, subtract)
         {
             SetTables(valueWeightPairs);
         }
@@ -51,7 +51,7 @@ namespace AliasMethod
             }
         }
 
-        private void SetTables(ICollection<Tuple<T, int>> valueWeightPairs)
+        private void SetTables(ICollection<(T Value, int Weight)> valueWeightPairs)
         {
             Alias.Clear();
             Probability.Clear();
@@ -61,13 +61,14 @@ namespace AliasMethod
 
             var probabilities = new List<double>();
 
-            TotalWeight = valueWeightPairs.Aggregate(0, (a, b) => a + b.Item2);
-            foreach (var vwp in valueWeightPairs)
+            TotalWeight = valueWeightPairs.Aggregate(0, (a, b) => a + b.Weight);
+
+            foreach (var (value, weight) in valueWeightPairs)
             {
-                probabilities.Add((double)vwp.Item2 / TotalWeight);
-                Probability.Add((double)vwp.Item2 / TotalWeight);
+                probabilities.Add((double)weight / TotalWeight);
+                Probability.Add((double)weight / TotalWeight);
                 Alias.Add(0);
-                Values.Add(vwp.Item1);
+                Values.Add(value);
             }
 
             var small = new Stack<int>();

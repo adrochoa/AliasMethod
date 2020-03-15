@@ -5,7 +5,7 @@ namespace AliasMethod
 {
     sealed class LinearWeightTable<T> : AbstractWeightTable<T> where T : struct
     {
-        public LinearWeightTable(ICollection<Tuple<T, int>> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract) : base(valueWeightPairs, multiply, subtract) { }
+        public LinearWeightTable(ICollection<(T Value, int Weight)> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract) : base(valueWeightPairs, multiply, subtract) { }
 
         protected override int Index
         {
@@ -15,7 +15,7 @@ namespace AliasMethod
                 double cumulativeSum = 0;
                 for (int i = 0; i < Table.Count; i++)
                 {
-                    cumulativeSum += Table[i].Item2;
+                    cumulativeSum += Table[i].Weight;
                     if (x < cumulativeSum)
                     {
                         return i;
@@ -30,7 +30,7 @@ namespace AliasMethod
         {
             get
             {
-                return Table[Index].Item1;
+                return Table[Index].Value;
             }
         }
 
@@ -39,8 +39,8 @@ namespace AliasMethod
             get
             {
                 int index = Index;
-                T value = Table[index].Item1;
-                TotalWeight -= Table[index].Item2;
+                T value = Table[index].Value;
+                TotalWeight -= Table[index].Weight;
                 Table.RemoveAt(index);
                 return value;
             }

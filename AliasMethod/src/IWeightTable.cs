@@ -7,6 +7,6 @@ namespace AliasMethod
         void Reset();
         T Sample { get; }
         T SampleWithoutReplacement { get; }
-        (double Mean, double StandardDeviation) SummaryStats { get; }
+        (double Mean, double StandardDeviation, int Count) SummaryStats { get; }
     }
 }

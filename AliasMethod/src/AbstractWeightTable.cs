@@ -7,21 +7,22 @@ namespace AliasMethod
 {
     abstract class AbstractWeightTable<T> : IWeightTable<T> where T : struct
     {
-        protected readonly List<Tuple<T, int>> MasterTable = new List<Tuple<T, int>>();
-        protected readonly List<Tuple<T, int>> Table = new List<Tuple<T, int>>();
+        //protected readonly List<Tuple<T, int>> MasterTable = new List<Tuple<T, int>>();
+        protected readonly List<(T Value, int Weight)> MasterTable = new List<(T Value, int Weight)>();
+        protected readonly List<(T Value, int Weight)> Table = new List<(T Value, int Weight)>();
         protected int TotalWeight = 0;
         readonly Func<T, int, double> Multiply;
         readonly Func<T, double, double> Subtract;
 
-        public AbstractWeightTable(ICollection<Tuple<T, int>> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract)
+        public AbstractWeightTable(ICollection<(T Value, int Weight)> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract)
         {
             foreach (var vwp in valueWeightPairs)
             {
-                MasterTable.Add(new Tuple<T, int>(vwp.Item1, vwp.Item2));
-                Table.Add(new Tuple<T, int>(vwp.Item1, vwp.Item2));
+                MasterTable.Add(vwp);
+                Table.Add(vwp);
             }
 
-            TotalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
+            TotalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Weight);
             Multiply = multiply;
             Subtract = subtract;
         }
@@ -32,10 +33,10 @@ namespace AliasMethod
             Table.Clear();
             foreach (var vwp in MasterTable)
             {
-                Table.Add(new Tuple<T, int>(vwp.Item1, vwp.Item2));
+                Table.Add(vwp);
             }
 
-            TotalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
+            TotalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Weight);
         }
 
         public abstract T Sample { get; }
@@ -45,11 +46,11 @@ namespace AliasMethod
         {
             get
             {
-                foreach (var vwp in MasterTable)
+                foreach (var (value, weight) in MasterTable)
                 {
-                    for (int i = 0; i < vwp.Item2; i++)
+                    for (int i = 0; i < weight; i++)
                     {
-                        yield return vwp.Item1;
+                        yield return value;
                     }
                 }
             }
@@ -60,10 +61,10 @@ namespace AliasMethod
             get
             {
                 double average = 0;
-                double totalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
-                foreach (var vwp in MasterTable)
+                double totalWeight = Table.Aggregate(0, (a, b) => a + b.Weight);
+                foreach (var (value, weight) in Table)
                 {
-                    average += Multiply(vwp.Item1, vwp.Item2) / totalWeight;
+                    average += Multiply(value, weight) / totalWeight;
                 }
 
                 return average;
@@ -73,23 +74,22 @@ namespace AliasMethod
         double StandardDeviation(double average)
         {
             double variance = 0;
-            double totalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Item2);
-            foreach (var vwp in MasterTable)
+            double totalWeight = Table.Aggregate(0, (a, b) => a + b.Weight);
+            foreach (var (value, weight) in Table)
             {
-                variance += vwp.Item2 * Math.Pow(Subtract(vwp.Item1, average), 2) / totalWeight;
+                variance += weight * Math.Pow(Subtract(value, average), 2) / totalWeight;
             }
 
             return Math.Sqrt(variance);
         }
 
-        public (double Mean, double StandardDeviation) SummaryStats
+        public (double Mean, double StandardDeviation, int Count) SummaryStats
         {
             get
             {
                 var average = Average;
                 var standardDeviation = StandardDeviation(average);
-
-                return (Mean: average, StandardDeviation: standardDeviation);
+                return (Mean: average, StandardDeviation: standardDeviation, Count: TotalWeight);
             }
         }
 
