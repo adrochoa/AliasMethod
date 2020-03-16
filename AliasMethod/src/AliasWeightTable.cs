@@ -10,7 +10,7 @@ namespace AliasMethod
         readonly List<double> Probability = new List<double>();
         readonly List<T> Values = new List<T>();
 
-        public AliasWeightTable(ICollection<(T Value, int Weight)> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract) : base(valueWeightPairs, multiply, subtract)
+        public AliasWeightTable(IEnumerable<(T Value, int Weight)> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract) : base(valueWeightPairs, multiply, subtract)
         {
             SetTables(valueWeightPairs);
         }
@@ -51,25 +51,27 @@ namespace AliasMethod
             }
         }
 
-        private void SetTables(ICollection<(T Value, int Weight)> valueWeightPairs)
+        private void SetTables(IEnumerable<(T Value, int Weight)> valueWeightPairs)
         {
             Alias.Clear();
             Probability.Clear();
             Values.Clear();
 
-            double average = 1d / valueWeightPairs.Count;
-
             var probabilities = new List<double>();
 
             TotalWeight = valueWeightPairs.Aggregate(0, (a, b) => a + b.Weight);
 
+            int count = 0;
             foreach (var (value, weight) in valueWeightPairs)
             {
                 probabilities.Add((double)weight / TotalWeight);
                 Probability.Add((double)weight / TotalWeight);
                 Alias.Add(0);
                 Values.Add(value);
+                ++count;
             }
+
+            double average = 1d / count;
 
             var small = new Stack<int>();
             var large = new Stack<int>();

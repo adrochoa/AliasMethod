@@ -14,7 +14,7 @@ namespace AliasMethod
         readonly Func<T, int, double> Multiply;
         readonly Func<T, double, double> Subtract;
 
-        public AbstractWeightTable(ICollection<(T Value, int Weight)> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract)
+        public AbstractWeightTable(IEnumerable<(T Value, int Weight)> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract)
         {
             foreach (var vwp in valueWeightPairs)
             {

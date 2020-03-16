@@ -5,7 +5,7 @@ namespace AliasMethod
 {
     sealed class LinearWeightTable<T> : AbstractWeightTable<T> where T : struct
     {
-        public LinearWeightTable(ICollection<(T Value, int Weight)> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract) : base(valueWeightPairs, multiply, subtract) { }
+        public LinearWeightTable(IEnumerable<(T Value, int Weight)> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract) : base(valueWeightPairs, multiply, subtract) { }
 
         protected override int Index
         {
