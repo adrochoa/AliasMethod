@@ -42,9 +42,9 @@ namespace AliasMethod
 
         public void Replace(Predicate<T> predicate, T replacement)
         {
-            for (int i = 0; i < Dual.Count; i++)
+            for (var i = 0; i < Dual.Count; i++)
             {
-                for (int j = 0; j < Dual[i].Count; j++)
+                for (var j = 0; j < Dual[i].Count; j++)
                 {
                     if (predicate(Dual[i][j]))
                     {

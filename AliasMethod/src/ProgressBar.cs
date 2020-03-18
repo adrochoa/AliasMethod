@@ -18,7 +18,7 @@ namespace AliasMethod
 
         public void Update(long count)
         {
-            int updatePercent = (int)(count * 100 / TotalCount);
+            var updatePercent = (int)(count * 100 / TotalCount);
             if (updatePercent > Percent)
             {
                 Percent = updatePercent;

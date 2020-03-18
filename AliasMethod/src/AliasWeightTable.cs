@@ -19,8 +19,8 @@ namespace AliasMethod
         {
             get
             {
-                int column = StaticRandom.Next(Probability.Count);
-                bool coinToss = StaticRandom.NextDouble() < Probability[column];
+                var column = StaticRandom.Next(Probability.Count);
+                var coinToss = StaticRandom.NextDouble() < Probability[column];
                 return coinToss ? column : Alias[column];
             }
         }
@@ -31,20 +31,14 @@ namespace AliasMethod
             SetTables(MasterTable);
         }
 
-        public override T Sample
-        {
-            get
-            {
-                return Values[Index];
-            }
-        }
+        public override T Sample => Values[Index];
 
         public override T SampleWithoutReplacement
         {
             get
             {
-                int index = Index;
-                T value = Values[index];
+                var index = Index;
+                var value = Values[index];
                 Table.RemoveAt(index);
                 SetTables(Table);
                 return value;
@@ -61,7 +55,7 @@ namespace AliasMethod
 
             TotalWeight = valueWeightPairs.Aggregate(0, (a, b) => a + b.Weight);
 
-            int count = 0;
+            var count = 0;
             foreach (var (value, weight) in valueWeightPairs)
             {
                 probabilities.Add((double)weight / TotalWeight);
@@ -71,12 +65,12 @@ namespace AliasMethod
                 ++count;
             }
 
-            double average = 1d / count;
+            var average = 1d / count;
 
             var small = new Stack<int>();
             var large = new Stack<int>();
 
-            for (int i = 0; i < probabilities.Count; ++i)
+            for (var i = 0; i < probabilities.Count; ++i)
             {
                 if (probabilities[i] >= average)
                 {
@@ -90,8 +84,8 @@ namespace AliasMethod
 
             while (small.Count > 0 && large.Count > 0)
             {
-                int less = small.Pop();
-                int more = large.Pop();
+                var less = small.Pop();
+                var more = large.Pop();
 
                 Probability[less] = probabilities[less] * probabilities.Count;
                 Alias[less] = more;

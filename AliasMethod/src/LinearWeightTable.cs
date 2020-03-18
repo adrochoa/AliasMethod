@@ -13,7 +13,7 @@ namespace AliasMethod
             {
                 double x = StaticRandom.Next(TotalWeight);
                 double cumulativeSum = 0;
-                for (int i = 0; i < Table.Count; i++)
+                for (var i = 0; i < Table.Count; i++)
                 {
                     cumulativeSum += Table[i].Weight;
                     if (x < cumulativeSum)
@@ -26,20 +26,14 @@ namespace AliasMethod
             }
         }
 
-        public override T Sample
-        {
-            get
-            {
-                return Table[Index].Value;
-            }
-        }
+        public override T Sample => Table[Index].Value;
 
         public override T SampleWithoutReplacement
         {
             get
             {
-                int index = Index;
-                T value = Table[index].Value;
+                var index = Index;
+                var value = Table[index].Value;
                 TotalWeight -= Table[index].Weight;
                 Table.RemoveAt(index);
                 return value;

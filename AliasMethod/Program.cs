@@ -1,11 +1,10 @@
 ﻿using MathNet.Numerics.Distributions;
-using MathNet.Numerics.Statistics;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace AliasMethod
 {
@@ -17,7 +16,7 @@ namespace AliasMethod
         static async Task Main(string[] args)
         {
             var testTable = new List<(int Value, int Weight)>();
-            for (int i = 1; i < 4; i++)
+            for (var i = 1; i < 4; i++)
             {
                 testTable.Add((Value: i, Weight: i));
             }
@@ -25,12 +24,12 @@ namespace AliasMethod
             long totalCount = 100000000;
             long processCount = Environment.ProcessorCount - 1;
 
-            long minPerProcess = totalCount / processCount;
-            long excess = totalCount % processCount;
+            var minPerProcess = totalCount / processCount;
+            var excess = totalCount % processCount;
 
             var countPerProcess = new long[processCount];
 
-            for (int i = 0; i < countPerProcess.Length; i++)
+            for (var i = 0; i < countPerProcess.Length; i++)
             {
                 countPerProcess[i] = i < excess ? minPerProcess + 1 : minPerProcess;
             }
@@ -57,12 +56,13 @@ namespace AliasMethod
 
         static async Task Simulate<T>(IEnumerable<(T Value, int Weight)> valueWeightPairs, long count, Func<T, int, double> multiply, Func<T, double, double> subtract, Func<T, double> toDouble) where T : struct
         {
-            await Task.Run(() => {
+            await Task.Run(() =>
+            {
                 var aliasWeightTable = new AliasWeightTable<T>(valueWeightPairs, multiply, subtract);
                 double average = 0;
                 for (long i = 0; i < count; i++)
                 {
-                    T sample = aliasWeightTable.Sample;
+                    var sample = aliasWeightTable.Sample;
                     average = (average * i + toDouble(sample)) / (i + 1);
                     Interlocked.Increment(ref Counter);
                 }
@@ -73,7 +73,7 @@ namespace AliasMethod
         static void SychronousMain(string[] args)
         {
             var testTable = new List<(int Value, int Weight)>();
-            for (int i = 1; i < 4; i++)
+            for (var i = 1; i < 4; i++)
             {
                 testTable.Add((Value: i, Weight: i));
             }
@@ -102,16 +102,16 @@ namespace AliasMethod
             Console.WriteLine($"basicAvergage = {basicAverage}");
             Console.WriteLine($"aliasAvergage = {aliasAverage}");
 
-            var aliasSummaryStats = aliasTable.SummaryStats;
-            var aliasScore = -Math.Abs(aliasSummaryStats.Mean - aliasAverage) / aliasSummaryStats.StandardDeviation * Math.Sqrt(aliasSummaryStats.Count);
+            var (aliasMean, aliasStandardDeviation, aliasCount) = aliasTable.SummaryStats;
+            var aliasScore = -Math.Abs(aliasMean - aliasAverage) / aliasStandardDeviation * Math.Sqrt(aliasCount);
 
-            var basicSummaryStats = basicTable.SummaryStats;
-            var basicScore = -Math.Abs(basicSummaryStats.Mean - basicAverage) / basicSummaryStats.StandardDeviation * Math.Sqrt(basicSummaryStats.Count);
+            var (basicMean, basicStandardDeviation, basicCount) = basicTable.SummaryStats;
+            var basicScore = -Math.Abs(basicMean - basicAverage) / basicStandardDeviation * Math.Sqrt(basicCount);
 
             var pValue = Normal.CDF(0, 1, basicScore) * 2;
 
-            Console.WriteLine($"Theoretical Average = {aliasSummaryStats.Mean}");
-            Console.WriteLine($"Diff = {aliasSummaryStats.Mean - aliasAverage}"); // or basicAverage
+            Console.WriteLine($"Theoretical Average = {aliasMean}");
+            Console.WriteLine($"Diff = {aliasMean - aliasAverage}"); // or basicAverage
             Console.WriteLine($"pValue = {pValue}");
             Console.ReadKey();
         }

@@ -48,7 +48,7 @@ namespace AliasMethod
             {
                 foreach (var (value, weight) in MasterTable)
                 {
-                    for (int i = 0; i < weight; i++)
+                    for (var i = 0; i < weight; i++)
                     {
                         yield return value;
                     }
