@@ -39,7 +39,8 @@ namespace AliasMethod
             TotalWeight = MasterTable.Aggregate(0, (a, b) => a + b.Weight);
         }
 
-        public abstract T Sample { get; }
+        public T Sample => Table[Index].Value;
+
         public abstract T SampleWithoutReplacement { get; }
 
         IEnumerable<T> Enumerate

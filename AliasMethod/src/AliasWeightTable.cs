@@ -8,7 +8,6 @@ namespace AliasMethod
     {
         readonly List<int> Alias = new List<int>();
         readonly List<double> Probability = new List<double>();
-        readonly List<T> Values = new List<T>();
 
         public AliasWeightTable(IEnumerable<(T Value, int Weight)> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract) : base(valueWeightPairs, multiply, subtract)
         {
@@ -31,14 +30,12 @@ namespace AliasMethod
             SetTables(MasterTable);
         }
 
-        public override T Sample => Values[Index];
-
         public override T SampleWithoutReplacement
         {
             get
             {
                 var index = Index;
-                var value = Values[index];
+                var value = Table[index].Value;
                 Table.RemoveAt(index);
                 SetTables(Table);
                 return value;
@@ -49,7 +46,6 @@ namespace AliasMethod
         {
             Alias.Clear();
             Probability.Clear();
-            Values.Clear();
 
             var probabilities = new List<double>();
 
@@ -61,7 +57,6 @@ namespace AliasMethod
                 probabilities.Add((double)weight / TotalWeight);
                 Probability.Add((double)weight / TotalWeight);
                 Alias.Add(0);
-                Values.Add(value);
                 ++count;
             }
 

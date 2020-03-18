@@ -26,8 +26,6 @@ namespace AliasMethod
             }
         }
 
-        public override T Sample => Table[Index].Value;
-
         public override T SampleWithoutReplacement
         {
             get
