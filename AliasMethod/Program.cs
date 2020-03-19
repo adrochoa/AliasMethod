@@ -11,18 +11,19 @@ namespace AliasMethod
     class Program
     {
         static readonly ConcurrentBag<(double Average, long Count)> Bag = new ConcurrentBag<(double Average, long Count)>();
+        static readonly ConcurrentDictionary<long, long> Dictionary = new ConcurrentDictionary<long, long>();
         static long Counter = 0;
 
         static async Task Main(string[] args)
         {
-            var testTable = new List<(int Value, int Weight)>();
+            var valueWeightPairs = new List<(int Value, int Weight)>();
             for (var i = 1; i < 4; i++)
             {
-                testTable.Add((Value: i, Weight: i));
+                valueWeightPairs.Add((Value: i, Weight: i));
             }
 
             long totalCount = 100000000;
-            long processCount = Environment.ProcessorCount - 1;
+            long processCount = Environment.ProcessorCount;
 
             var minPerProcess = totalCount / processCount;
             var excess = totalCount % processCount;
@@ -34,24 +35,47 @@ namespace AliasMethod
                 countPerProcess[i] = i < excess ? minPerProcess + 1 : minPerProcess;
             }
 
-            var tasks = new List<Task>();
             Console.WriteLine("Beginning sample run...");
-            foreach (int i in countPerProcess)
-            {
-                var task = Simulate(testTable, i, (x, y) => x * y, (x, y) => x - y, x => x);
-                tasks.Add(task);
-            }
+            var tasks = EnumerateTasks<int>(valueWeightPairs, (x, y) => x * y, (x, y) => x - y, x => x, countPerProcess);
 
-            using var pbar = new ProgressBar(totalCount);
-            while (tasks.Any())
-            {
-                pbar.Update(Counter);
-                var finished = await Task.WhenAny(tasks);
-                tasks.Remove(finished);
-            }
-            pbar.Update(Counter);
+            await Task.WhenAll(tasks);
 
             Console.ReadKey();
+        }
+
+        static async Task MemoryIntenseMain(string[] args)
+        {
+            var valueWeightPairs = new List<(int Value, int Weight)>();
+            for (var i = 1; i < 4; i++)
+            {
+                valueWeightPairs.Add((Value: i, Weight: i));
+            }
+
+            long totalCount = 1000000;
+
+            Console.WriteLine("Beginning sample run...");
+
+            var tasks = EnumerateTasks<int>(valueWeightPairs, (x, y) => x * y, (x, y) => x - y, x => x, totalCount);
+
+            await Task.WhenAll(tasks);
+
+            Console.ReadKey();
+        }
+
+        static IEnumerable<Task> EnumerateTasks<T>(IEnumerable<(T Value, int Weight)> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract, Func<T, long> toLong, long count) where T : struct
+        {
+            for (long i = 0; i < count; i++)
+            {
+               yield return Sample(valueWeightPairs, multiply, subtract, toLong);
+            }
+        }
+
+        static IEnumerable<Task> EnumerateTasks<T>(IEnumerable<(T Value, int Weight)> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract, Func<T, double> toDouble, long[] countPerProcess) where T : struct
+        {
+            foreach (long count in countPerProcess)
+            {
+                yield return Simulate(valueWeightPairs, count, multiply, subtract, toDouble);
+            }
         }
 
         static async Task Simulate<T>(IEnumerable<(T Value, int Weight)> valueWeightPairs, long count, Func<T, int, double> multiply, Func<T, double, double> subtract, Func<T, double> toDouble) where T : struct
@@ -67,6 +91,17 @@ namespace AliasMethod
                     Interlocked.Increment(ref Counter);
                 }
                 Bag.Add((Average: average, Count: count));
+            });
+        }
+
+        static async Task Sample<T>(IEnumerable<(T Value, int Weight)> valueWeightPairs, Func<T, int, double> multiply, Func<T, double, double> subtract, Func<T, long> toLong) where T : struct
+        {
+            await Task.Run(() =>
+            {
+                var aliasWeightTable = new AliasWeightTable<T>(valueWeightPairs, multiply, subtract);
+                var sample = toLong(aliasWeightTable.Sample);
+                Dictionary.AddOrUpdate(sample, 1, (x, y) => x + y);
+                Interlocked.Increment(ref Counter);
             });
         }
 
