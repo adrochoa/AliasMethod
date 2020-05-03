@@ -14,7 +14,98 @@ namespace AliasMethod
         static readonly ConcurrentDictionary<long, long> Dictionary = new ConcurrentDictionary<long, long>();
         static long Counter = 0;
 
-        static async Task Main(string[] args)
+        static void Main(string[] args)
+        {
+            const int COLOR_COUNT = 3;
+            const int BALL_COUNT = 10;
+
+            var list = new List<List<List<int>>>();
+            list.Add(new List<List<int>>());
+
+            var comparer = new SetComparer<int>();
+            for (int count = 1; count < BALL_COUNT + 1; count++)
+            {
+                var e = GetPermutations(Enumerable.Range(0, COLOR_COUNT), count, comparer);
+                list.Add(e);
+            }
+
+            for (int i = 0; i <list.Count; i++)
+            {
+                Console.WriteLine();
+                foreach (var l in list[i])
+                {
+                    for (int j = 0; j < l.Count; j++)
+                    {
+                        Console.Write($"{l[j]}\t");
+                    }
+                    Console.WriteLine();
+                }
+                Console.WriteLine();
+            }
+        }
+
+        static IEnumerable<IEnumerable<T>> GetPermutations<T>(IEnumerable<T> list, int length)
+        {
+            if (length == 1)
+            {
+                return list.Select(t => new T[] { t });
+            }
+            return GetPermutations(list, length - 1).SelectMany(t => list, (t1, t2) => t1.Concat(new T[] { t2 }));
+        }
+
+        static List<List<T>> GetPermutations<T>(IEnumerable<T> list, int length, IEqualityComparer<IEnumerable<T>> comparer)
+        {
+            var temp = GetPermutations<T>(list, length);
+            var result = new List<List<T>>();
+            foreach (var l in temp)
+            {
+                var test = l.ToList();
+                test.Sort();
+                if (!result.Contains(test, comparer))
+                {
+                    result.Add(test);
+                }
+            }
+
+            return result;
+        }
+
+        static List<List<int>> ListCombinations(int itemCount, int choiceCount, IEqualityComparer<List<int>> comparer)
+        {
+            var list = new List<List<int>>();
+            int combinationCount = Power(choiceCount, itemCount);
+            int[] choices = new int[itemCount];
+            int k = 0;
+            for (int i = 0; i < combinationCount; i++)
+            {
+                var newList = choices.ToList();
+                newList.Sort();
+                if (!list.Contains(newList, comparer))
+                {
+                    list.Add(newList);
+                }
+                choices[k]++;
+                if (choices[k] > choiceCount)
+                {
+                    choices[k] = 0;
+                    k++;
+                    k %= choices.Length;
+                }
+            }
+            return list;
+        }
+
+        static int Power(int b, int exponent)
+        {
+            int val = 1;
+            for (int i = 0; i < exponent; i++)
+            {
+                val *= b;
+            }
+            return val;
+        }
+
+        static async Task AsyncMain(string[] args)
         {
             var valueWeightPairs = new List<(int Value, int Weight)>();
             for (var i = 1; i < 4; i++)
