@@ -2,7 +2,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,6 +18,22 @@ namespace AliasMethod
         static long Counter = 0;
 
         static void Main(string[] args)
+        {
+            var entryAssembly = Assembly.GetEntryAssembly();
+            var resourceName = entryAssembly.GetManifestResourceNames().Where(x => x.Contains(@".seed.json")).First();
+
+            Dictionary<string, string> seed;
+            using var resourceStream = entryAssembly.GetManifestResourceStream(resourceName);
+            using var sr = new StreamReader(resourceStream);
+            seed = JsonSerializer.Deserialize<Dictionary<string, string>>(sr.ReadToEnd());
+
+            foreach (var kvp in seed)
+            {
+                Console.WriteLine($"{kvp.Key}, {kvp.Value}!");
+            }
+        }
+
+        static void CombinationsMain(string[] args)
         {
             const int COLOR_COUNT = 3;
             const int BALL_COUNT = 10;
